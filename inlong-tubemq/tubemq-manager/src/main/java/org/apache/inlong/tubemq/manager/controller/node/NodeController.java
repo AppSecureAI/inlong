@@ -87,7 +87,7 @@ public class NodeController {
      * broker method proxy
      * divides the operation on broker to different method
      */
-    @RequestMapping(value = "/broker")
+    @RequestMapping(value = "/broker", method = RequestMethod.POST)
     public @ResponseBody TubeMQResult brokerMethodProxy(@RequestParam String method, @RequestBody String req)
             throws Exception {
         switch (method) {
@@ -111,7 +111,7 @@ public class NodeController {
         }
     }
 
-    @RequestMapping(value = "/master")
+    @RequestMapping(value = "/master", method = RequestMethod.POST)
     public @ResponseBody TubeMQResult masterMethodProxy(@RequestParam String method, @RequestBody String req) {
         switch (method) {
             case TubeConst.MODIFY:
