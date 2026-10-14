@@ -24,7 +24,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-	"unsafe"
 
 	"github.com/apache/inlong/inlong-sdk/dataproxy-sdk-twins/dataproxy-sdk-golang/bufferpool"
 	"github.com/apache/inlong/inlong-sdk/dataproxy-sdk-twins/dataproxy-sdk-golang/syncx"
@@ -262,7 +261,7 @@ func (b *batchReq) encode() []byte {
 	byteOrder.PutUint32(uint32LenBuf, uint32(attrLen))
 	_, _ = b.buffer.Write(uint32LenBuf)
 	// attributes
-	_, _ = b.buffer.Write(*(*[]byte)(unsafe.Pointer(&attr)))
+	_, _ = b.buffer.WriteString(attr)
 
 	return b.buffer.Bytes()
 }
