@@ -24,13 +24,13 @@ import org.apache.inlong.audit.util.AuditData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -38,6 +38,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import javax.net.ssl.SSLParameters;
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Audit sender manager
@@ -95,9 +98,14 @@ public class SenderManager {
 
     private void reconnect(InetSocketAddress inetSocketAddress, int timeout)
             throws IOException {
-        socket = new Socket();
-        socket.connect(inetSocketAddress, timeout);
-        socket.setSoTimeout(timeout);
+        SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+        SSLSocket sslSocket = (SSLSocket) sslSocketFactory.createSocket();
+        SSLParameters sslParameters = sslSocket.getSSLParameters();
+        sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+        sslSocket.setSSLParameters(sslParameters);
+        sslSocket.connect(inetSocketAddress, timeout);
+        sslSocket.setSoTimeout(timeout);
+        socket = sslSocket;
     }
 
     /**
@@ -234,9 +242,14 @@ public class SenderManager {
             }
 
             try (FileOutputStream fos = new FileOutputStream(file);
-                    ObjectOutputStream objectOutputStream = new ObjectOutputStream(fos)) {
+                    DataOutputStream dos = new DataOutputStream(fos)) {
 
-                objectOutputStream.writeObject(failedDataMap);
+                dos.writeInt(failedDataMap.size());
+                for (AuditData auditData : failedDataMap.values()) {
+                    byte[] data = auditData.getDataByte();
+                    dos.writeInt(data.length);
+                    dos.write(data);
+                }
             }
         } catch (IOException e) {
             LOGGER.error("Error writing to local file: {}", e.getMessage(), e);
@@ -268,18 +281,27 @@ public class SenderManager {
         }
 
         try (FileInputStream inputStream = new FileInputStream(file);
-                ObjectInputStream objectStream = new ObjectInputStream(inputStream)) {
+                DataInputStream dis = new DataInputStream(inputStream)) {
 
-            ConcurrentHashMap<Long, AuditData> fileData = (ConcurrentHashMap<Long, AuditData>) objectStream
-                    .readObject();
-
-            for (Map.Entry<Long, AuditData> entry : fileData.entrySet()) {
-                if (!sendData(entry.getValue().getDataByte())) {
-                    LOGGER.error("Local file recovery failed: {}", entry.getValue());
+            int count = dis.readInt();
+            if (count < 0 || count > auditConfig.getMaxCacheRow()) {
+                LOGGER.error("Invalid entry count in audit file: {}", count);
+                return;
+            }
+            for (int i = 0; i < count; i++) {
+                int len = dis.readInt();
+                if (len <= 0 || len > MAX_RESPONSE_LENGTH) {
+                    LOGGER.error("Invalid entry length in audit file: {}", len);
+                    return;
+                }
+                byte[] data = new byte[len];
+                dis.readFully(data);
+                if (!sendData(data)) {
+                    LOGGER.error("Local file recovery failed for entry {}", i);
                 }
                 sleep();
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (IOException e) {
             LOGGER.error("check audit file error:{}", e.getMessage(), e);
         } finally {
             if (!file.delete()) {
