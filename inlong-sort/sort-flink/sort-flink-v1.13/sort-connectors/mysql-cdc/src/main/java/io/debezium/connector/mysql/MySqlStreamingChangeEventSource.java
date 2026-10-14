@@ -65,8 +65,7 @@ import org.slf4j.event.Level;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.TrustManagerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -76,7 +75,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -1019,29 +1017,10 @@ public class MySqlStreamingChangeEventSource implements StreamingChangeEventSour
                     @Override
                     protected void initSSLContext(SSLContext sc)
                             throws GeneralSecurityException {
-                        sc.init(finalKMS, new TrustManager[]{
-                                new X509TrustManager() {
-
-                                    @Override
-                                    public void checkClientTrusted(
-                                            X509Certificate[] x509Certificates,
-                                            String s)
-                                            throws CertificateException {
-                                    }
-
-                                    @Override
-                                    public void checkServerTrusted(
-                                            X509Certificate[] x509Certificates,
-                                            String s)
-                                            throws CertificateException {
-                                    }
-
-                                    @Override
-                                    public X509Certificate[] getAcceptedIssuers() {
-                                        return new X509Certificate[0];
-                                    }
-                                }
-                        }, null);
+                        TrustManagerFactory tmf = TrustManagerFactory.getInstance(
+                                TrustManagerFactory.getDefaultAlgorithm());
+                        tmf.init((KeyStore) null);
+                        sc.init(finalKMS, tmf.getTrustManagers(), null);
                     }
                 };
             } else {
