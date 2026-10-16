@@ -55,4 +55,8 @@ ADD target/sort-connector-jdbc-v1.15-${VERSION}.jar /opt/inlong-sort/connectors/
 ENV AUDIT_QUERY_URL=127.0.0.1:10080
 ADD manager-docker.sh bin/
 RUN chmod +x bin/manager-docker.sh
+RUN useradd --system --no-create-home --shell /usr/sbin/nologin inlong \
+    && chown -R inlong:inlong /opt/inlong-manager \
+    && chown inlong:inlong /opt/inlong-sort/connectors
+USER inlong
 CMD ["bin/manager-docker.sh"]
