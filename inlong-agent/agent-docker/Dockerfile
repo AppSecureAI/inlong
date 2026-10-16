@@ -41,4 +41,7 @@ ENV NEED_TRACK_NATIVE_MEMORY=false
 ENV AGENT_JVM_HEAP_OPTS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=40.0 -XX:MaxRAMPercentage=80.0 -XX:-UseAdaptiveSizePolicy"
 ADD agent-docker.sh bin/
 RUN chmod +x bin/agent-docker.sh
+RUN useradd --system --no-create-home --shell /usr/sbin/nologin agent \
+    && chown -R agent:agent conf logs
+USER agent
 CMD ["bin/agent-docker.sh"]
