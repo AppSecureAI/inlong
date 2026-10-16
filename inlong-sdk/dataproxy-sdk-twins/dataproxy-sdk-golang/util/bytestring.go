@@ -16,16 +16,12 @@
 
 package util
 
-import "unsafe"
-
-// BytesToString without coping
+// BytesToString converts bytes to a string.
 func BytesToString(bytes []byte) string {
-	return *(*string)(unsafe.Pointer(&bytes))
+	return string(bytes)
 }
 
-// StringToBytes without coping
+// StringToBytes converts a string to bytes.
 func StringToBytes(str string) []byte {
-	x := (*[2]uintptr)(unsafe.Pointer(&str))
-	h := [3]uintptr{x[0], x[1], x[1]}
-	return *(*[]byte)(unsafe.Pointer(&h))
+	return []byte(str)
 }
