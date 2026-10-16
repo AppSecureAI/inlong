@@ -37,4 +37,7 @@ ENV DATAPROXY_JVM_HEAP_OPTS="-XX:+UseContainerSupport -XX:InitialRAMPercentage=4
 WORKDIR /opt/inlong-dataproxy
 ADD dataproxy-docker.sh bin/
 RUN chmod +x bin/dataproxy-docker.sh
+RUN useradd --system --no-create-home --shell /usr/sbin/nologin dataproxy \
+    && chown -R dataproxy:dataproxy conf logs
+USER dataproxy
 CMD ["bin/dataproxy-docker.sh"]
