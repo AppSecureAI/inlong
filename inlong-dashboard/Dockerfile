@@ -19,7 +19,7 @@
 FROM nginx
 # add built files from target output
 RUN apt-get update \
-    && apt-get install -y net-tools vim wget procps
+    && apt-get install -y net-tools vim wget procps libcap2-bin
 ARG DASHBOARD_FILE
 WORKDIR /usr/share/nginx/html
 ADD ${DASHBOARD_FILE} /usr/share/nginx/html
@@ -27,4 +27,10 @@ ADD nginx.conf /etc/nginx/conf.d/default.conf
 ENV MANAGER_API_ADDRESS=127.0.0.1:8083
 ADD dashboard-docker.sh /docker-entrypoint.d/
 RUN chmod +x /docker-entrypoint.d/dashboard-docker.sh
+RUN chown -R nginx:nginx /usr/share/nginx/html /var/cache/nginx \
+    && chown nginx:nginx /etc/nginx/conf.d /etc/nginx/conf.d/default.conf \
+    && touch /var/run/nginx.pid \
+    && chown nginx:nginx /var/run/nginx.pid \
+    && setcap 'cap_net_bind_service=+ep' /usr/sbin/nginx
+USER nginx:nginx
 CMD ["/docker-entrypoint.d/dashboard-docker.sh"]
