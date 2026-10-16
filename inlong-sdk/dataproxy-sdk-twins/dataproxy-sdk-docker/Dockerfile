@@ -149,4 +149,9 @@ RUN gcc --version && \
     python --version && \
     pip --version
 
+RUN useradd --system --create-home --home-dir /home/sdk --shell /sbin/nologin sdk && \
+    chown sdk:sdk /workspace
+
+USER sdk
+
 CMD ["/bin/bash"]
