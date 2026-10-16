@@ -51,4 +51,7 @@ WORKDIR /opt/inlong-audit
 RUN wget -P lib/ https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
 ADD audit-docker.sh bin/
 RUN chmod +x bin/audit-docker.sh
+RUN useradd --system --create-home --home-dir /opt/inlong-audit --shell /usr/sbin/nologin audit \
+    && chown -R audit:audit /opt/inlong-audit
+USER audit
 CMD ["bin/audit-docker.sh"]
