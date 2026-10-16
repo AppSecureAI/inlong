@@ -38,4 +38,7 @@ WORKDIR /opt/tubemq-manager
 RUN wget -P lib/ https://repo1.maven.org/maven2/mysql/mysql-connector-java/8.0.28/mysql-connector-java-8.0.28.jar
 ADD manager-docker.sh bin/
 RUN chmod +x bin/manager-docker.sh
+RUN groupadd --system tubemq && useradd --system --gid tubemq --no-create-home --shell /usr/sbin/nologin tubemq \
+    && chown -R tubemq:tubemq /opt/tubemq-manager/conf /opt/tubemq-manager/logs
+USER tubemq
 CMD ["bin/manager-docker.sh"]
