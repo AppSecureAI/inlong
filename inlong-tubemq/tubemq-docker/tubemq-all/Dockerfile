@@ -32,6 +32,8 @@ RUN chmod +x /opt/tubemq-server/bin/*
 # standalone default
 ENV TARGET=standalone
 WORKDIR /opt/tubemq-server/
+RUN chown -R zookeeper:zookeeper /opt/tubemq-server
+USER zookeeper
 # master port
 EXPOSE 8715 8080 9001
 # broker port
