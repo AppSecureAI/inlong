@@ -16,9 +16,7 @@
 
 module github.com/apache/inlong/inlong-sdk/dataproxy-sdk-twins/dataproxy-sdk-golang
 
-go 1.21
-
-toolchain go1.21.4
+go 1.24
 
 require (
 	github.com/bwmarrin/snowflake v0.3.0
@@ -48,7 +46,7 @@ require (
 )
 
 require (
-	github.com/klauspost/compress v1.17.11
+	github.com/klauspost/compress v1.18.7
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0 // indirect
 )
