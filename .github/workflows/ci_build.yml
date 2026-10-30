@@ -137,14 +137,14 @@ jobs:
 
       - name: Upload sort connectors package for flink v1.15
         if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: apache-inlong-${{ env.VERSION }}-sort-connectors-flink-v1.15.tar.gz
           path: ./inlong-distribution/target/apache-inlong-${{ env.VERSION }}-sort-connectors-flink-v1.15.tar.gz
 
       - name: Upload sort connectors package for flink v1.18
         if: ${{ success() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: apache-inlong-${{ env.VERSION }}-sort-connectors-flink-v1.18.tar.gz
           path: ./inlong-distribution/target/apache-inlong-${{ env.VERSION }}-sort-connectors-flink-v1.18.tar.gz
